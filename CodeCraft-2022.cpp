@@ -1,7 +1,17 @@
-#include <iostream>
+#include "Reader.hpp"
+#include <algorithm>
+#include <cmath>
+
+Data data;
+void getData()
+{
+    data = readData({
+        "",
+        "",
+        "",
+    });
+}
 
 int main()
 {
-    std::cout << "Hello world!" << std::endl;
-    return 0;
 }
