@@ -2,13 +2,17 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+using std::stoi;
+using std::string;
+using std::unordered_map;
+using std::vector;
 
 struct Data {
-    int day_;
-    std::unordered_map<std::string, int> edge_node_, customer_node_;
-    std::vector<std::vector<int>> qos_;
-    std::vector<std::vector<int>> need_;
-    std::vector<int> band_width_;
+    int day_, customer_node_count_, edge_node_count_;
+    unordered_map<string, int> edge_node_, customer_node_;
+    vector<vector<int>> qos_;
+    vector<vector<int>> demand_;
+    vector<int> band_width_;
 
     Data(Data&&) = default;
     Data(const Data&) = delete;
@@ -17,4 +21,4 @@ struct Data {
     Data& operator=(Data&&) = default;
 };
 
-Data readData(std::vector<const char*> paths);
+Data readData(vector<const char*> paths);
