@@ -1,4 +1,5 @@
 #include "Reader.hpp"
+#include "iostream"
 
 vector<string> readLine(string&& s)
 {
@@ -61,16 +62,18 @@ Data readData(vector<const char*> paths)
     data.demand_ = std::move(v);
 
     auto bandwidth = readCSV(paths[1]);
-    vector<string> edge_name(bandwidth.size()), bw(bandwidth.size());
+    vector<string> edge_name, bw;
     for (auto& v : bandwidth) {
         edge_name.push_back(v[0]);
         bw.push_back(v[1]);
     }
+
     data.edge_node_ = encodeNode(edge_name);
     data.edge_node_.erase(edge_name[0]);
     data.edge_node_count_ = data.edge_node_.size();
     vector<int> v1;
     v1.resize(data.edge_node_count_ + 1);
+
     for (int i = 1; i <= data.edge_node_count_; ++i) {
         v1[i] = stoi(bw[i]);
     }
@@ -85,5 +88,6 @@ Data readData(vector<const char*> paths)
         }
     }
     data.qos_ = std::move(v);
+
     return data;
 }
