@@ -8,6 +8,6 @@ using std::vector;
 
 void WriteData(
     const char* path,
-    vector<string>& customer_node,
-    vector<string>& edge_node,
+    const vector<string>& customer_node,
+    const vector<string>& edge_node,
     vector<vector<vector<pair<int, int>>>> plan);

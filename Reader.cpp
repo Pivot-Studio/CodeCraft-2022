@@ -31,6 +31,7 @@ vector<vector<string>> readCSV(const char* path)
         fgets(buf, BUFFER_SIZE, f);
         data.emplace_back(readLine(string(buf)));
     }
+    fclose(f);
     return data;
 }
 unordered_map<string, int> encodeNode(const vector<string>& v)
@@ -63,6 +64,8 @@ Data readData(vector<const char*> paths)
 
     auto bandwidth = readCSV(paths[1]);
     vector<string> edge_name, bw;
+    edge_name.reserve(bandwidth.size());
+    bw.reserve(bandwidth.size());
     for (auto& v : bandwidth) {
         edge_name.push_back(v[0]);
         bw.push_back(v[1]);

@@ -1,3 +1,7 @@
 bin/
 build/
 .vscode/
+data/
+output/
+.idea/
+cmake-build-debug/
