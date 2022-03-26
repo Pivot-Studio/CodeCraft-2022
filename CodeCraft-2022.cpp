@@ -13,8 +13,8 @@ using std::make_pair;
 using std::priority_queue;
 using std::sort;
 
-const int MAXT = 8929;
-const int MAXN = 136;
+const int MAXT = 10000;
+const int MAXN = 200;
 
 int EdgeTemporyAssign[MAXN]; //某时刻的临时分配序列,此编号不是edge的编号,而是排序后的序列号
 int CrtDemandPos = 1; //未分配的t起始标
@@ -51,9 +51,9 @@ vector<vector<int>> demand; // demand[t][i]:t时刻第i个客户(t,i从1开始�
 void getData()
 {
     data = readData({
-        "../data/demand.csv",
-        "../data/site_bandwidth.csv",
-        "../data/qos.csv",
+        "/data/demand.csv",
+        "/data/site_bandwidth.csv",
+        "/data/qos.csv",
     });
 }
 void PrintEdge()
@@ -112,7 +112,7 @@ void Assign(int EdgeEnd)
         edge[pos].flow -= EdgeTemporyAssign[pos];
         edge[pos].EdgeCostFlag++;
         //**在此分流量
-        cout << "edge " << edge[pos].name << " get " << EdgeTemporyAssign[pos] << " at " << CrtDemandPos << endl;
+        // cout << "edge " << edge[pos].name << " get " << EdgeTemporyAssign[pos] << " at " << CrtDemandPos << endl;
     }
 
     int t = TimeTotalDemand[CrtDemandPos].name;
@@ -122,13 +122,13 @@ void Assign(int EdgeEnd)
         int DemandTmp = data.demand_[t][demandpos];
         if (DemandTmp < EdgeTemporyAssign[edgepos]) {
             // cout<<"1:Demandpos="<<demandpos<<" DemandTmp="<<DemandTmp<<" t="<<t<<" edgepos="<<edgepos<<endl;
-            cout << "1:edge " << edgepos << "|" << edge[edgepos].name << " get " << EdgeTemporyAssign[edgepos] << " t=" << t << "|" << CrtDemandPos << " DemandTmp=" << DemandTmp << endl;
+            // cout << "1:edge " << edgepos << "|" << edge[edgepos].name << " get " << EdgeTemporyAssign[edgepos] << " t=" << t << "|" << CrtDemandPos << " DemandTmp=" << DemandTmp << endl;
             plan[t][demandpos].push_back(pair<int, int>(DemandTmp, edge[edgepos].name));
             EdgeTemporyAssign[edgepos] -= DemandTmp;
             demandpos++;
         } else {
             // cout<<"2:Demandpos="<<demandpos<<" DemandTmp="<<DemandTmp<<" t="<<t<<" edgepos="<<edgepos<<endl;
-            cout << "2:edge " << edgepos << "|" << edge[edgepos].name << " get " << EdgeTemporyAssign[edgepos] << " t=" << t << "|" << CrtDemandPos << " DemandTmp=" << DemandTmp << endl;
+            // cout << "2:edge " << edgepos << "|" << edge[edgepos].name << " get " << EdgeTemporyAssign[edgepos] << " t=" << t << "|" << CrtDemandPos << " DemandTmp=" << DemandTmp << endl;
             plan[t][demandpos].push_back(pair<int, int>(EdgeTemporyAssign[edgepos], edge[edgepos].name));
             data.demand_[t][demandpos] -= EdgeTemporyAssign[edgepos];
             edgepos++;
@@ -139,7 +139,7 @@ void Assign(int EdgeEnd)
 }
 void AssignSingle(int pos)
 {
-    cout << "edge " << edge[pos].name << " get " << EdgeTemporyAssign[pos] << " at " << TimeTotalDemand[CrtDemandPos].name << " pos " << CrtDemandPos << endl;
+    // cout << "edge " << edge[pos].name << " get " << EdgeTemporyAssign[pos] << " at " << TimeTotalDemand[CrtDemandPos].name << " pos " << CrtDemandPos << endl;
     int t = TimeTotalDemand[CrtDemandPos].name; //得到真正的时间
     for (int i = 1; i < data.demand_[t].size(); i++) {
         plan[t][i].push_back(pair<int, int>(data.demand_[t][i], edge[pos].name));
@@ -230,12 +230,12 @@ void step2()
         }
 
         //不超流量
-        cout << "type2 "
+        /*cout << "type2 "
              << "crt:" << CrtDemandPos << endl;
         for (auto a : EdgeTemporyAssign) {
             cout << a << " ";
         }
-        cout << endl;
+        cout << endl;*/
 
         Assign(n2);
         n2 -= flag;
@@ -345,7 +345,7 @@ void init()
     }
 
     T = data.demand_.size() - 2;
-    // n=data.band_width_.size()-1;
+    n = data.band_width_.size() - 1;
     m = data.demand_[1].size() - 1;
 
     NoCost = floor(T * 0.05); //空位数
@@ -371,7 +371,7 @@ int main()
     genNodeNameList();
     step1();
     step2();
-    PrintEdge();
+    // PrintEdge();
     genNameVector();
 
     /*
@@ -398,6 +398,6 @@ int main()
         }
     }*/
 
-    WriteData("../output/solution.txt", customer_node, edge_node, std::move(plan));
+    WriteData("/output/solution.txt", customer_node, edge_node, std::move(plan));
     return 0;
 }
