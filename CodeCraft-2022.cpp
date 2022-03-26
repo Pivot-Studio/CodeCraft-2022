@@ -21,6 +21,7 @@ int CrtDemandPos = 1; //未分配的t起始标
 int T = 100; // T大小
 int NoCost = 0; //最大空位数
 int n = 18; //边缘节点数量
+int m = 0;
 
 Data data;
 
@@ -42,22 +43,26 @@ struct Edge {
 struct Demand {
     int name;
     int flow;
-} TimeTotalDemand[MAXT]; //每个时刻的总需求'
+} TimeTotalDemand[MAXT]; //每个时刻的总需求
 
-vector<vector<vector<pair<int, int>>>> plan; //输出方案
+vector<vector<vector< pair<int, int> >>> plan; //输出方案plan[t][i][j]<flow,bandwidth> t时刻第i个用户的分配方案
 vector<vector<int>> demand; // demand[t][i]:t时刻第i个客户(t,i从1开始编号)
-vector<string> edge_node; //第j个边缘节点(从1开始编号)
-vector<string> customer_node;
 
 void getData()
 {
     data = readData({
-        "./data/demand.csv",
-        "./data/site_bandwidth.csv",
-        "./data/qos.csv",
+        "E:\\Code\\CPP\\CodeCraft-2022\\data\\demand.csv",
+        "E:\\Code\\CPP\\CodeCraft-2022\\data\\site_bandwidth.csv",
+        "E:\\Code\\CPP\\CodeCraft-2022\\data\\qos.csv",
     });
 }
-
+void PrintEdge()
+{
+    cout << "PrintEdge:" << endl;
+    for (int i = 1; i <= n; i++) {
+        cout << "edge " << edge[i].name << " type " << edge[i].EdgeType << " remains " << edge[i].flow << " cost " << edge[i].EdgeCostFlag << endl;
+    }
+}
 bool EdgeCmp(const Edge& a, const Edge& b)
 {
     //令type=1放前面(空位已满)
@@ -74,6 +79,10 @@ bool DemandCmp(Demand a, Demand b)
     if (a.flow != b.flow) {
         return a.flow > b.flow;
     }
+    return a.name < b.name;
+}
+bool EdgeCmpByNum(const Edge& a, const Edge& b)
+{
     return a.name < b.name;
 }
 void GenerateAvgAssign(int amount)
@@ -109,34 +118,39 @@ void Assign(int EdgeEnd)
     int t = TimeTotalDemand[CrtDemandPos].name;
     int edgepos = 1;
     int demandpos = 1;
-    while (edgepos <= n && demandpos <= demand[t].size()) {
-        int DemandTmp = demand[t][demandpos];
+    while (edgepos <= n && demandpos < data.demand_[t].size()) {
+        int DemandTmp = data.demand_[t][demandpos];
         if (DemandTmp < EdgeTemporyAssign[edgepos]) {
-            plan[t][demandpos].push_back(make_pair(DemandTmp, edge[edgepos].name));
+            //cout<<"1:Demandpos="<<demandpos<<" DemandTmp="<<DemandTmp<<" t="<<t<<" edgepos="<<edgepos<<endl;
+            cout<<"1:edge "<<edgepos<<"|"<<edge[edgepos].name<<" get "<<EdgeTemporyAssign[edgepos]<<" t="<<t<<"|"<<CrtDemandPos<<" DemandTmp="<<DemandTmp<<endl;
+            plan[t][demandpos].push_back(pair<int,int>(DemandTmp, edge[edgepos].name));
             EdgeTemporyAssign[edgepos] -= DemandTmp;
             demandpos++;
         } else {
-            plan[t][demandpos].push_back(make_pair(EdgeTemporyAssign[edgepos], edge[edgepos].name));
-            demand[t][demandpos] -= EdgeTemporyAssign[edgepos];
+            //cout<<"2:Demandpos="<<demandpos<<" DemandTmp="<<DemandTmp<<" t="<<t<<" edgepos="<<edgepos<<endl;
+            cout<<"2:edge "<<edgepos<<"|"<<edge[edgepos].name<<" get "<<EdgeTemporyAssign[edgepos]<<" t="<<t<<"|"<<CrtDemandPos<<" DemandTmp="<<DemandTmp<<endl;
+            plan[t][demandpos].push_back(pair<int,int>(EdgeTemporyAssign[edgepos], edge[edgepos].name));
+            data.demand_[t][demandpos] -= EdgeTemporyAssign[edgepos];
             edgepos++;
         }
     }
+
+    memset(EdgeTemporyAssign,0,sizeof(EdgeTemporyAssign));
 }
 void AssignSingle(int pos)
 {
-    cout << "edge " << edge[pos].name << " get " << EdgeTemporyAssign[pos] << " at " << CrtDemandPos << endl;
+    cout << "edge " << edge[pos].name << " get " << EdgeTemporyAssign[pos] << " at " << TimeTotalDemand[CrtDemandPos].name<<" pos "<<CrtDemandPos << endl;
     int t = TimeTotalDemand[CrtDemandPos].name; //得到真正的时间
-    for (int i = 1; i <= demand[t].size(); i++) {
-        plan[t][i].push_back(make_pair(demand[t][i], edge[pos].name));
+    for (int i = 1; i < data.demand_[t].size(); i++) {
+        plan[t][i].push_back(pair<int,int>(data.demand_[t][i], edge[pos].name));
     }
 }
 void step2()
 {
-    // todo:做一些处理去除I型以降低成本
+    //todo:做一些处理去除I型以降低成本
     //平均分配法:
     //对剩下的节点进行排序
     sort(edge + 1, edge + n, EdgeCmp);
-
     //寻找type0和type1的分界
     int TypeSplit = 0; // type1(空位未满)的开始下标
     if (!edge[n].EdgeType) {
@@ -151,11 +165,84 @@ void step2()
     }
     int n2 = TypeSplit - 1; // 2型节点数量(也是最后一个节点位置)
 
+    /*sort(edge+1,edge+n2, EdgeCmpByNum);
+    //确定95分位
+    GenerateAvgAssign(n2);
+    bool  flag = false;
+    for (int i = 0; i <= n2; ++i) {
+        if(EdgeTemporyAssign[i]>edge[n2].flow){
+            flag = true;
+            break;
+        }
+    }
+    if(flag){
+        // todo:修正
+    }
+
+    int NintyFive[MAXN];
+    for (int i = 1; i <= n2; ++i) {
+        NintyFive[i]=EdgeTemporyAssign[i];
+    }
+    Assign(n2);
+    CrtDemandPos++;
+
+    //剩下的贴近最大值分配
+    while (CrtDemandPos<=T){
+        for(int i=1;i<=n2&&TimeTotalDemand[CrtDemandPos].flow>0;++i){
+            if(NintyFive[i] <= TimeTotalDemand[CrtDemandPos].flow && NintyFive[i]<=edge[i].flow){
+                EdgeTemporyAssign[i]=NintyFive[i];
+                TimeTotalDemand[CrtDemandPos].flow-=NintyFive[i];
+            }else if(NintyFive[i] > TimeTotalDemand[CrtDemandPos].flow){
+                EdgeTemporyAssign[i]=TimeTotalDemand[CrtDemandPos].flow;
+                TimeTotalDemand[CrtDemandPos].flow=0;
+            }else{
+                EdgeTemporyAssign[i]=edge[i].flow;
+                TimeTotalDemand[CrtDemandPos].flow-=edge[i].flow;
+            }
+        }
+        Assign(n2);
+        CrtDemandPos++;
+    }*/
+
+
     while (CrtDemandPos <= T) {
         GenerateAvgAssign(n2);
+        int flag=0;//淘汰数
+        //检查是否有超出流量
+        for (int i = 1; i <= n2-flag; ++i) {
+            if(EdgeTemporyAssign[i]>=edge[i].flow){
+                //交换并淘汰
+                Edge tmp = Edge{edge[n2-flag].name,edge[n2-flag].flow,edge[n2-flag].EdgeType,edge[n2-flag].EdgeCostFlag};
+                int tmpAssign=EdgeTemporyAssign[n2];
 
-        //超过了流量,修正调配方案
-        if (EdgeTemporyAssign[n2] > edge[n2].flow) {
+                edge[n2-flag].name=edge[i].name;
+                edge[n2-flag].flow=edge[i].flow;
+                edge[n2-flag].EdgeType=edge[i].EdgeType;
+                edge[n2-flag].EdgeCostFlag=edge[i].EdgeCostFlag;
+
+                edge[i].name=tmp.name;
+                edge[i].flow=tmp.flow;
+                edge[i].EdgeType=tmp.EdgeType;
+                edge[i].EdgeCostFlag=tmp.EdgeCostFlag;
+                EdgeTemporyAssign[i]=tmpAssign;
+
+                flag++;
+            }
+        }
+
+        //不超流量
+        cout<<"type2 " <<"crt:"<<CrtDemandPos<<endl;
+        for(auto a:EdgeTemporyAssign){
+            cout<<a<<" ";
+        }
+        cout<<endl;
+
+        Assign(n2);
+        n2-=flag;
+        CrtDemandPos++;
+
+        /*if (flag) {
+            //超过了流量,修正调配方案
             //加上倍数
             int times = (EdgeTemporyAssign[n2] - edge[n2].flow) / (n2 - 1);
             for (int i = 1; i <= n2 - 1; i++) {
@@ -166,22 +253,28 @@ void step2()
             for (int i = 1; i <= sub; i++) {
                 EdgeTemporyAssign[i]++;
             }
+            cout<<"type1 " <<"crt:"<<CrtDemandPos<<endl;
+            for(auto a:EdgeTemporyAssign){
+                cout<<a<<" ";
+            }
+            PrintEdge();
+            cout<<endl;
             Assign(n2);
             n2--; //最后一个节点归零,前移
             continue;
-        }
+        }else{
+            //不超流量
+            cout<<"type2 " <<"crt:"<<CrtDemandPos<<endl;
+            for(auto a:EdgeTemporyAssign){
+                cout<<a<<" ";
+            }
+            cout<<endl;
+            Assign(n2);
+            CrtDemandPos++;
+        }*/
+    }
+}
 
-        Assign(n2);
-        CrtDemandPos++;
-    }
-}
-void PrintEdge()
-{
-    cout << "PrintEdge:" << endl;
-    for (int i = 1; i <= n; i++) {
-        cout << "edge " << edge[i].name << " type " << edge[i].EdgeType << " remains " << edge[i].flow << " cost " << edge[i].EdgeCostFlag << endl;
-    }
-}
 void step1()
 {
     priority_queue<Edge, vector<Edge>, greater<Edge>> q;
@@ -224,26 +317,36 @@ void step1()
 }
 void genNodeNameList()
 {
-    customer_node.resize(data.customer_node_count_ + 1);
-    for (auto& p : data.customer_node_) {
-        customer_node[p.second] = p.first;
-    }
-    edge_node.resize(data.edge_node_count_ + 1);
-    for (auto& p : data.edge_node_) {
-        edge_node[p.second] = p.first;
+    plan.resize(T+1);
+    for (int i = 1; i < plan.size(); ++i) {
+        plan[i].resize(m+1);
     }
 }
+
 void init()
 {
+    //读入客户节点
+    for (int i = 1; i < data.demand_.size(); ++i) {
+        int res=0;
+        for (int j = 1; j < data.demand_[i].size(); ++j) {
+            res+=data.demand_[i][j];
+            //cout<<data.demand_[i][j]<<" ";
+        }
+        TimeTotalDemand[i].name=i;
+        TimeTotalDemand[i].flow=res;
+        //cout<<"i:"<<i<<" "<<res<<endl;
+    }
+
     //边缘节点流量
-    for (int i = 1; i <= n; i++) {
-        edge[i].name = i;
-        edge[i].flow = 430080;
+    for (int i = 1; i < data.band_width_.size(); ++i) {
+        //cout<<"i:"<<i<<" "<<data.band_width_[i]<<endl;
+        edge[i].name=i;
+        edge[i].flow=data.band_width_[i];
     }
-    //读入客户节点流量
-    for (int i = 1; i <= T; i++) {
-        cin >> TimeTotalDemand[i].flow;
-    }
+
+    T=data.demand_.size()-2;
+    //n=data.band_width_.size()-1;
+    m=data.demand_[1].size()-1;
 
     NoCost = floor(T * 0.05); //空位数
     sort(TimeTotalDemand + 1, TimeTotalDemand + T + 1, DemandCmp);
@@ -252,11 +355,13 @@ void init()
 int main()
 {
     getData();
-    /*init();
+    init();
+    genNodeNameList();
     step1();
     step2();
-    PrintEdge();*/
-    genNodeNameList();
+    PrintEdge();
+
+    /*
     vector<vector<vector<pair<int, int>>>> testv;
     testv.resize(data.day_ + 1);
     for (int i = 0; i <= data.day_; ++i) {
@@ -267,7 +372,19 @@ int main()
                 testv[i][j][k] = { k, 0 };
             }
         }
+    }*/
+
+    //去掉这个,将plan写入即可
+    for (int i = 1; i < plan.size(); ++i) {
+        cout<<"t:"<<i;
+        for (int j = 0; j < plan[i].size(); ++j) {
+            for(auto p:plan[i][j]){
+                cout<<" j:"<<j<<"<"<<p.first<<","<<p.second<<">";
+            }
+            cout<<endl;
+        }
     }
-    WriteData("./output/solution.txt", customer_node, edge_node, std::move(testv));
+
+    //WriteData("./output/solution.txt", customer_node, edge_node, std::move(testv));
     return 0;
 }
