@@ -11,8 +11,8 @@ include_directories(${PROJECT_SOURCE_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)
 
 # 生成debug版本
-SET(CMAKE_BUILD_TYPE "release")
-if (CMAKE_BUILD_TYPE STREQUAL debug)
+SET(CMAKE_BUILD_TYPE "Release")
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-D_DEBUG)
 endif ()
 SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -std=c++11")
