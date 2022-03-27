@@ -165,45 +165,6 @@ void step2()
     }
     int n2 = TypeSplit - 1; // 2型节点数量(也是最后一个节点位置)
 
-    /*sort(edge+1,edge+n2, EdgeCmpByNum);
-    //确定95分位
-    GenerateAvgAssign(n2);
-    bool  flag = false;
-    for (int i = 0; i <= n2; ++i) {
-        if(EdgeTemporyAssign[i]>edge[n2].flow){
-            flag = true;
-            break;
-        }
-    }
-    if(flag){
-        // todo:修正
-    }
-
-    int NintyFive[MAXN];
-    for (int i = 1; i <= n2; ++i) {
-        NintyFive[i]=EdgeTemporyAssign[i];
-    }
-    Assign(n2);
-    CrtDemandPos++;
-
-    //剩下的贴近最大值分配
-    while (CrtDemandPos<=T){
-        for(int i=1;i<=n2&&TimeTotalDemand[CrtDemandPos].flow>0;++i){
-            if(NintyFive[i] <= TimeTotalDemand[CrtDemandPos].flow && NintyFive[i]<=edge[i].flow){
-                EdgeTemporyAssign[i]=NintyFive[i];
-                TimeTotalDemand[CrtDemandPos].flow-=NintyFive[i];
-            }else if(NintyFive[i] > TimeTotalDemand[CrtDemandPos].flow){
-                EdgeTemporyAssign[i]=TimeTotalDemand[CrtDemandPos].flow;
-                TimeTotalDemand[CrtDemandPos].flow=0;
-            }else{
-                EdgeTemporyAssign[i]=edge[i].flow;
-                TimeTotalDemand[CrtDemandPos].flow-=edge[i].flow;
-            }
-        }
-        Assign(n2);
-        CrtDemandPos++;
-    }*/
-
     while (CrtDemandPos <= T) {
         GenerateAvgAssign(n2);
         int flag = 0; //淘汰数
@@ -229,49 +190,9 @@ void step2()
             }
         }
 
-        //不超流量
-        /*cout << "type2 "
-             << "crt:" << CrtDemandPos << endl;
-        for (auto a : EdgeTemporyAssign) {
-            cout << a << " ";
-        }
-        cout << endl;*/
-
         Assign(n2);
         n2 -= flag;
         CrtDemandPos++;
-
-        /*if (flag) {
-            //超过了流量,修正调配方案
-            //加上倍数
-            int times = (EdgeTemporyAssign[n2] - edge[n2].flow) / (n2 - 1);
-            for (int i = 1; i <= n2 - 1; i++) {
-                EdgeTemporyAssign[i] += times;
-            }
-            //加上余数
-            int sub = (EdgeTemporyAssign[n2] - edge[n2].flow) % n2;
-            for (int i = 1; i <= sub; i++) {
-                EdgeTemporyAssign[i]++;
-            }
-            cout<<"type1 " <<"crt:"<<CrtDemandPos<<endl;
-            for(auto a:EdgeTemporyAssign){
-                cout<<a<<" ";
-            }
-            PrintEdge();
-            cout<<endl;
-            Assign(n2);
-            n2--; //最后一个节点归零,前移
-            continue;
-        }else{
-            //不超流量
-            cout<<"type2 " <<"crt:"<<CrtDemandPos<<endl;
-            for(auto a:EdgeTemporyAssign){
-                cout<<a<<" ";
-            }
-            cout<<endl;
-            Assign(n2);
-            CrtDemandPos++;
-        }*/
     }
 }
 
@@ -309,7 +230,7 @@ void step1()
         q.push(Edge { edge[e.name].name, edge[e.name].flow, edge[e.name].EdgeType, edge[e.name].EdgeCostFlag });
 
         CrtDemandPos++;
-        if (CrtDemandPos >= T) {
+        if (CrtDemandPos > T) {
             //分配完了
             break;
         }
@@ -370,22 +291,11 @@ int main()
     init();
     genNodeNameList();
     step1();
-    step2();
-    // PrintEdge();
+    PrintEdge();
+    if (CrtDemandPos != T) {
+        step2();
+    }
     genNameVector();
-
-    /*
-    vector<vector<vector<pair<int, int>>>> testv;
-    testv.resize(data.day_ + 1);
-    for (int i = 0; i <= data.day_; ++i) {
-        testv[i].resize(data.customer_node_count_ + 1);
-        for (int j = 0; j <= data.customer_node_count_; ++j) {
-            testv[i][j].resize(data.edge_node_count_ + 1);
-            for (int k = 0; k <= data.edge_node_count_ + 1; ++k) {
-                testv[i][j][k] = { k, 0 };
-            }
-        }
-    }*/
 
     //去掉这个,将plan写入即可
     /*for (int i = 1; i < plan.size(); ++i) {
