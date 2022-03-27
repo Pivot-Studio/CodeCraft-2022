@@ -48,13 +48,24 @@ struct Demand {
 vector<vector<vector<pair<int, int>>>> plan; //输出方案plan[t][i][j]<flow,bandwidth> t时刻第i个用户的分配方案
 vector<vector<int>> demand; // demand[t][i]:t时刻第i个客户(t,i从1开始编号)
 
+#define MCH
+
 void getData()
 {
+
+#ifdef MCH
+    data = readData({
+        "../data/demand.csv",
+        "../data/site_bandwidth.csv",
+        "../data/qos.csv",
+    });
+#else
     data = readData({
         "/data/demand.csv",
         "/data/site_bandwidth.csv",
         "/data/qos.csv",
     });
+#endif
 }
 void PrintEdge()
 {
@@ -163,7 +174,8 @@ void step2()
     } else {
         TypeSplit = n + 1;
     }
-    int n2 = TypeSplit - 1; // 2型节点数量(也是最后一个节点位置)
+    // int n2 = TypeSplit - 1; // 2型节点数量(也是最后一个节点位置)
+    int n2 = n;
 
     while (CrtDemandPos <= T) {
         GenerateAvgAssign(n2);
@@ -238,9 +250,9 @@ void step1()
 }
 void genNodeNameList()
 {
-    plan.resize(T + 1);
+    plan.resize(T + 20);
     for (int i = 1; i < plan.size(); ++i) {
-        plan[i].resize(m + 1);
+        plan[i].resize(m + 20);
     }
 }
 
@@ -273,11 +285,9 @@ void init()
     sort(TimeTotalDemand + 1, TimeTotalDemand + T + 1, DemandCmp);
     memset(EdgeTemporyAssign, 0, sizeof(EdgeTemporyAssign));
 }
-vector<string> customer_node, edge_node;
+string customer_node[MAXN], edge_node[MAXN];
 void genNameVector()
 {
-    customer_node.resize(data.customer_node_count_ + 10);
-    edge_node.resize(data.edge_node_count_ + 10);
     for (auto& p : data.customer_node_) {
         customer_node[p.second] = p.first;
     }
@@ -307,7 +317,10 @@ int main()
             cout << endl;
         }
     }*/
-
+#ifdef MCH
+    WriteData("../output/solution.txt", customer_node, edge_node, std::move(plan));
+#else
     WriteData("/output/solution.txt", customer_node, edge_node, std::move(plan));
+#endif
     return 0;
 }
