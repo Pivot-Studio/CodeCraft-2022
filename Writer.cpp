@@ -17,7 +17,7 @@ void WriteData(
                 fprintf(f, ":");
             }
             for (int k = 0; k < plan[i][j].size(); ++k) {
-                fprintf(f, "%s<%s,%d>", j == 1 ? ":" : ",", edge_node[plan[i][j][k].second].c_str(), plan[i][j][k].first);
+                fprintf(f, "%s<%s,%d>", k == 0 ? ":" : ",", edge_node[plan[i][j][k].second].c_str(), plan[i][j][k].first);
             }
             fputc('\n', f);
         }
