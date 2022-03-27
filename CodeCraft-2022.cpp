@@ -178,6 +178,9 @@ void step2()
     int n2 = n;
 
     while (CrtDemandPos <= T) {
+        if (n2 == 0) {
+            break;
+        }
         GenerateAvgAssign(n2);
         int flag = 0; //淘汰数
         //检查是否有超出流量
@@ -250,9 +253,9 @@ void step1()
 }
 void genNodeNameList()
 {
-    plan.resize(T + 20);
+    plan.resize(T + 1);
     for (int i = 1; i < plan.size(); ++i) {
-        plan[i].resize(m + 20);
+        plan[i].resize(m + 1);
     }
 }
 
